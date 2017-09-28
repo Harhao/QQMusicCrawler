@@ -40,10 +40,11 @@ class requestUrlSpider(scrapy.Spider):
     def start_requests(self):
         yield Request(url=self.url,headers=self.headers,callback=self.parse)
     def parse(self, response):
-        text=response.text
-        text=re.sub(r'^searchCallbacksong\d{0,}\(','',text)
-        text=re.sub(r'\)$','',text)
-        jsonData=json.loads(text)
+        # text=response.text
+        # text=re.sub(r'^searchCallbacksong\d{0,}\(','',text)
+        # text=re.sub(r'\)$','',text)
+        # jsonData=json.loads(text)
+        jsonData=self.dealJson(response,["^searchCallbacksong\d{0,}\(","\)$"])
         songDetail=jsonData["data"]["song"]
         length=len(songDetail["list"])
         for i in range(length):
@@ -52,17 +53,23 @@ class requestUrlSpider(scrapy.Spider):
             musicUrl="https://c.y.qq.com/v8/fcg-bin/fcg_play_single_song.fcg?songmid={mid}&tpl=yqq_song_detail&format=jsonp&callback=getOneSongInfoCallback&g_tk=5381&jsonpCallback=getOneSongInfoCallback&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0"
             yield Request(url=musicUrl.format(mid=songmid),headers=self.reqHeader,callback=self.parse_music,dont_filter=True)
     def parse_music(self,response):
-        text=response.text
-        text=re.sub(r'^getOneSongInfoCallback\(','',text)
-        text=re.sub(r'\)$','',text)
-        jsonData=json.loads(text)
+        # text=response.text
+        # text=re.sub(r'^getOneSongInfoCallback\(','',text)
+        # text=re.sub(r'\)$','',text)
+        # jsonData=json.loads(text)
+        jsonData=self.dealJson(response,["^getOneSongInfoCallback\(","\)$"])
         musicList=jsonData["data"][0]
         musicName=musicList["name"]
         musicUrl=jsonData["url"]
         for key,val in musicUrl.items():
-            logging.info(val)
+            logging.info(musicName+" http://"+val)
             # yield Request(url='http://'+val,headers=self.reqHeader,callback=self.downloadMusic,dont_filter=True)
-
+    def dealJson(self,response,pattern):
+        text=response.text
+        text=re.sub(pattern[0],'',text)
+        text=re.sub(pattern[1],'',text)
+        jsonData=json.loads(text)
+        return jsonData
     def downloadMusic(self,response):
         pass
         # with open('1.mp3','wb')as f:
