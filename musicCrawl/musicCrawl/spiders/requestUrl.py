@@ -1,0 +1,70 @@
+# -*- coding: utf-8 -*-
+import scrapy
+from scrapy import Request
+import logging
+import json
+import re
+class requestUrlSpider(scrapy.Spider):
+    name = "requestUrl"
+    allowed_domains = ["www.y.qq.com"]
+    start_urls = ['http://www.y.qq.com/']
+    headers={
+        ':authority':'c.y.qq.com',
+        ':method':'GET',
+        ':path':'/soso/fcgi-bin/client_search_cp?ct=24&qqmusic_ver=1298&new_json=1&remoteplace=txt.yqq.song&searchid=54134794373394557&t=0&aggr=1&cr=1&catZhida=1&lossless=0&flag_qc=0&p=1&n=20&w=%E8%B5%B5%E9%9B%B7&g_tk=5381&jsonpCallback=searchCallbacksong4621&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0',
+        ':scheme':'https',
+        'accept':'*/*',
+        'accept-encoding':'gzip, deflate, sdch, br',
+        'accept-language':'zh-CN,zh;q=0.8',
+        'cache-control':'no-cache',
+        'cookie':'pgv_pvi=2539236352; RK=E/NGWlYOOU; pgv_pvid=4700237117; ptui_loginuin=1482816494; ptcz=0ed94d9b03e410a4a4d523a936e1de8f739a265f19407322ac522dc4402dd9f8; pt2gguin=o1482816494; yq_index=0; pgv_si=s1229479936; ts_last=y.qq.com/portal/search.html; ts_uid=7066888440; yqq_stat=0',
+        'pragma':'no-cache',
+        'referer':'https://y.qq.com/portal/search.html',
+        'user-agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
+    }
+    reqHeader={
+        ':authority':'c.y.qq.com',
+        ':method':'GET',
+        ':path':'/v8/fcg-bin/fcg_play_single_song.fcg?songmid=001bhwUC1gE6ep&tpl=yqq_song_detail&format=jsonp&callback=getOneSongInfoCallback&g_tk=5381&jsonpCallback=getOneSongInfoCallback&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0',
+        ':scheme':'https',
+        'accept':'*/*',
+        'accept-encoding':'gzip, deflate, sdch, br',
+        'accept-language':'zh-CN,zh;q=0.8',
+        'cache-control':'no-cache',
+        'cookie':'pgv_pvi=2539236352; RK=E/NGWlYOOU; pgv_pvid=4700237117; ptui_loginuin=1482816494; ptcz=0ed94d9b03e410a4a4d523a936e1de8f739a265f19407322ac522dc4402dd9f8; pt2gguin=o1482816494; pgv_si=s1229479936; yq_playdata=s; yq_playschange=0; yq_index=3; qqmusic_fromtag=66; player_exist=1; yplayer_open=0; ts_last=y.qq.com/n/yqq/song/001bhwUC1gE6ep.html; ts_uid=7066888440; yqq_stat=0',
+        'pragma':'no-cache',
+        'referer':'https://y.qq.com/n/yqq/song/001bhwUC1gE6ep.html',
+        'user-agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
+    }
+    url="https://c.y.qq.com/soso/fcgi-bin/client_search_cp?ct=24&qqmusic_ver=1298&new_json=1&remoteplace=txt.yqq.song&searchid=56365046261055832&t=0&aggr=1&cr=1&catZhida=1&lossless=0&flag_qc=0&p=1&n=20&w=%E8%B5%B5%E9%9B%B7&g_tk=5381&jsonpCallback=searchCallbacksong412&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0"
+    def start_requests(self):
+        yield Request(url=self.url,headers=self.headers,callback=self.parse)
+    def parse(self, response):
+        text=response.text
+        text=re.sub(r'^searchCallbacksong\d{0,}\(','',text)
+        text=re.sub(r'\)$','',text)
+        jsonData=json.loads(text)
+        songDetail=jsonData["data"]["song"]
+        length=len(songDetail["list"])
+        for i in range(length):
+            action=songDetail["list"][i]
+            songmid=action["mid"]
+            musicUrl="https://c.y.qq.com/v8/fcg-bin/fcg_play_single_song.fcg?songmid={mid}&tpl=yqq_song_detail&format=jsonp&callback=getOneSongInfoCallback&g_tk=5381&jsonpCallback=getOneSongInfoCallback&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0"
+            yield Request(url=musicUrl.format(mid=songmid),headers=self.reqHeader,callback=self.parse_music,dont_filter=True)
+    def parse_music(self,response):
+        text=response.text
+        text=re.sub(r'^getOneSongInfoCallback\(','',text)
+        text=re.sub(r'\)$','',text)
+        jsonData=json.loads(text)
+        musicList=jsonData["data"][0]
+        musicName=musicList["name"]
+        musicUrl=jsonData["url"]
+        for key,val in musicUrl.items():
+            logging.info(val)
+            # yield Request(url='http://'+val,headers=self.reqHeader,callback=self.downloadMusic,dont_filter=True)
+
+    def downloadMusic(self,response):
+        pass
+        # with open('1.mp3','wb')as f:
+        #     f.write(response)
+        # logging.info(response)
