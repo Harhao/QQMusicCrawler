@@ -4,6 +4,8 @@ from scrapy import Request
 import logging
 import json
 import re
+import urllib.parse
+from musicCrawl.items import MusiccrawlItem
 class requestUrlSpider(scrapy.Spider):
     name = "requestUrl"
     allowed_domains = ["www.y.qq.com"]
@@ -36,9 +38,12 @@ class requestUrlSpider(scrapy.Spider):
         'referer':'https://y.qq.com/n/yqq/song/001bhwUC1gE6ep.html',
         'user-agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
     }
-    url="https://c.y.qq.com/soso/fcgi-bin/client_search_cp?ct=24&qqmusic_ver=1298&new_json=1&remoteplace=txt.yqq.song&searchid=56365046261055832&t=0&aggr=1&cr=1&catZhida=1&lossless=0&flag_qc=0&p=1&n=20&w=%E8%B5%B5%E9%9B%B7&g_tk=5381&jsonpCallback=searchCallbacksong412&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0"
+    url="https://c.y.qq.com/soso/fcgi-bin/client_search_cp?ct=24&qqmusic_ver=1298&new_json=1&remoteplace=txt.yqq.song&searchid=56365046261055832&t=0&aggr=1&cr=1&catZhida=1&lossless=0&flag_qc=0&p=1&n=50&w={singer}&g_tk=5381&jsonpCallback=searchCallbacksong412&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0"
+    singerName=["赵雷","薛之谦","李荣浩","陈奕迅","许嵩"]
     def start_requests(self):
-        yield Request(url=self.url,headers=self.headers,callback=self.parse)
+        for i in range(len(self.singerName)):
+            singer=urllib.parse.quote(self.singerName[i])
+            yield Request(url=self.url.format(singer=singer),headers=self.headers,callback=self.parse)
     def parse(self, response):
         # text=response.text
         # text=re.sub(r'^searchCallbacksong\d{0,}\(','',text)
@@ -62,7 +67,10 @@ class requestUrlSpider(scrapy.Spider):
         musicName=musicList["name"]
         musicUrl=jsonData["url"]
         for key,val in musicUrl.items():
-            logging.info(musicName+" http://"+val)
+            item=MusiccrawlItem()
+            item["name"]=musicName
+            item["url"]="http://"+val
+            yield item
             # yield Request(url='http://'+val,headers=self.reqHeader,callback=self.downloadMusic,dont_filter=True)
     def dealJson(self,response,pattern):
         text=response.text
@@ -74,4 +82,3 @@ class requestUrlSpider(scrapy.Spider):
         pass
         # with open('1.mp3','wb')as f:
         #     f.write(response)
-        # logging.info(response)
