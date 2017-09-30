@@ -13,3 +13,6 @@ class MusiccrawlItem(scrapy.Item):
     # name = scrapy.Field()
     name=scrapy.Field()
     url=scrapy.Field()
+class singerItem(scrapy.Item):
+    singerName=scrapy.Field()
+    singer_mid=scrapy.Field()
