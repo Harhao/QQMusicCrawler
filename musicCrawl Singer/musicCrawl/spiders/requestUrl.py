@@ -7,6 +7,7 @@ import re
 import urllib.parse
 import urllib.request
 from musicCrawl.items import MusiccrawlItem
+from . import getsinger
 class requestUrlSpider(scrapy.Spider):
     name = "requestUrl"
     allowed_domains = ["www.y.qq.com"]
@@ -41,8 +42,14 @@ class requestUrlSpider(scrapy.Spider):
     }
     url="https://c.y.qq.com/soso/fcgi-bin/client_search_cp?ct=24&qqmusic_ver=1298&new_json=1&remoteplace=txt.yqq.song&searchid=56365046261055832&t=0&aggr=1&cr=1&catZhida=1&lossless=0&flag_qc=0&p=1&n=50&w={singer}&g_tk=5381&jsonpCallback=searchCallbacksong412&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0"
     allUrl="https://c.y.qq.com/soso/fcgi-bin/client_search_cp?ct=24&qqmusic_ver=1298&new_json=1&remoteplace=txt.yqq.song&searchid=63213556368351152&t=0&aggr=1&cr=1&catZhida=1&lossless=0&flag_qc=0&p={page}&n=164&w={singer}&g_tk=5381&jsonpCallback=searchCallbacksong8887&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0"
-    singerName=["G.E.M. 邓紫棋","张碧晨","田馥甄","庄心妍"]
+    singerName=[]
     def start_requests(self):
+        getObj=getsinger.getsinger("mongo_uri","dbName","user","pass")
+        getObj.connect()
+        datalist=getObj.finddata()
+        datalist=list(datalist)
+        for i in range(len(datalist)):
+            self.singerName.append(datalist[i]["singerName"])
         for i in range(len(self.singerName)):
             singer=urllib.parse.quote(self.singerName[i])
             yield Request(url=self.url.format(singer=singer),headers=self.headers,callback=self.songCount,dont_filter=True)

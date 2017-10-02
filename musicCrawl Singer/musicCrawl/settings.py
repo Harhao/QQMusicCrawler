@@ -58,15 +58,15 @@ ROBOTSTXT_OBEY = False
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html
-#EXTENSIONS = {
-#    'scrapy.extensions.telnet.TelnetConsole': None,
-#}
+EXTENSIONS = {
+   'scrapy.extensions.telnet.TelnetConsole': None,
+}
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    # 'musicCrawl.pipelines.MongoPipeline': 300,
-    'musicCrawl.pipelines.MongoPipeline':300,
+   'musicCrawl.pipelines.MongoPipeline':300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -90,7 +90,7 @@ ITEM_PIPELINES = {
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 HTTPERROR_ALLOWED_CODES = [403]
-MONGO_URI='39.108.88.122'
-MONGO_DATABASE='zhihu'
-MONGO_USER="kiwis"
-MONGO_PASS="kiwis"
+MONGO_URI=''
+MONGO_DATABASE=''
+MONGO_USER=""
+MONGO_PASS=""
