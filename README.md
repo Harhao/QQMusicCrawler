@@ -9,3 +9,4 @@
   ```
   $ scrapy crawl requestUrl(requestSinger)
   ```
+ - 3.单个IP爬取可能会造成IP被封禁的情况，所以尽量设置下载延迟以及搭建一个动态更换的IP池，每一个请求换一个IP进行访问
